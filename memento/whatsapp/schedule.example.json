@@ -1,0 +1,12 @@
+[
+  {
+    "contact": "Contact Name or +91XXXXXXXXXX",
+    "message": "birthday",
+    "use_ai": true,
+    "start_month": 3,
+    "start_day": 1,
+    "end_month": 3,
+    "end_day": 31,
+    "comment": "Creative birthday message every day of March via Ollama"
+  }
+]

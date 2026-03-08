@@ -4,3 +4,6 @@
 node_modules/
 .wwebjs_auth/
 *.session
+schedule.json
+unforwarder_progress.json
+.wwebjs_cache/

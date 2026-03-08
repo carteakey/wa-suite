@@ -1,6 +1,0 @@
-langchain
-ollama
-langchain-ollama
-ipython
-tqdm
-load-dotenv

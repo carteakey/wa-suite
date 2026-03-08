@@ -9,7 +9,7 @@
 //   DRY_RUN=false node delete-junk-links.js        (nuke all patterns)
 //   MSG_LIMIT=5000 DRY_RUN=false node delete-junk-links.js
 
-const { createClient } = require('./client');
+const { createClient } = require('../../lib/client');
 
 const DRY_RUN   = process.env.DRY_RUN !== 'false';
 const MSG_LIMIT = parseInt(process.env.MSG_LIMIT || '2000', 10);

@@ -1,0 +1,16 @@
+{
+  "name": "memento-whatsapp",
+  "version": "1.0.0",
+  "description": "WhatsApp archival — save personal photos, export chats, preserve memories",
+  "scripts": {
+    "download-media":     "node download-media.js",
+    "dry-download-media": "DRY_RUN=true node download-media.js",
+    "export-chat":        "node export-chat.js",
+    "starred-sync":       "node starred-sync.js",
+    "stats":              "node stats.js"
+  },
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.26.1-alpha.3"
+  }
+}

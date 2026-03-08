@@ -7,7 +7,7 @@
 //   FORWARD_SCORE=2 DRY_RUN=false node delete-forwarded-media.js
 //   FORWARD_SCORE=1 DRY_RUN=false node delete-forwarded-media.js  (any forward)
 
-const { createClient } = require('./client');
+const { createClient } = require('../../lib/client');
 
 const DRY_RUN       = process.env.DRY_RUN !== 'false';
 const MSG_LIMIT     = parseInt(process.env.MSG_LIMIT || '2000', 10);

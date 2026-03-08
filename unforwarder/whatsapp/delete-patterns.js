@@ -8,7 +8,7 @@
 //   DRY_RUN=false node delete-patterns.js          (nuke)
 //   PATTERNS_FILE=./my-patterns.txt DRY_RUN=false node delete-patterns.js
 
-const { createClient } = require('./client');
+const { createClient } = require('../../lib/client');
 const fs = require('fs');
 const path = require('path');
 
