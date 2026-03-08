@@ -1,0 +1,37 @@
+# delete-patterns.txt — junk message patterns for delete-patterns.js
+# One pattern per line. Lines starting with # are comments.
+# Patterns are matched case-insensitively against the full message body.
+# Use /regex/flags syntax for full control, or plain text for simple substring match.
+
+# ── Good morning / night ──────────────────────────────────────────────────────
+/good\s*morning/i
+/good\s*night/i
+/good\s*evening/i
+/शुभ\s*(प्रभात|सुबह|संध्या|रात्रि)/
+/सुप्रभात/
+/शुभ रात्रि/
+
+# ── Motivational / inspirational filler ──────────────────────────────────────
+/thought\s+for\s+the\s+day/i
+/quote\s+of\s+the\s+day/i
+/stay\s+blessed/i
+/have\s+a\s+(great|wonderful|blessed|lovely)\s+day/i
+/may\s+god\s+bless/i
+
+# ── Religious forwards ────────────────────────────────────────────────────────
+/jai\s+(shree|sri)\s+ram/i
+/har\s+har\s+mahadev/i
+/share this (message|to) [0-9]+ (people|friends|groups)/i
+/forward this to/i
+/send this to all/i
+
+# ── News / political spam ─────────────────────────────────────────────────────
+/breaking\s*news/i
+/forwarded\s+as\s+received/i
+
+# ── WhatsApp chain messages ───────────────────────────────────────────────────
+/do not ignore this/i
+/must\s+(read|watch|share)/i
+/please\s+share\s+(this|with)/i
+/copy\s+and\s+paste/i
+/share\s+in\s+[0-9]+\s+groups/i

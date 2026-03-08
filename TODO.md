@@ -36,9 +36,9 @@ WhatsApp (whatsapp-web.js)
   - Facebook (`facebook.com`, `fb.com`, `fb.watch`)
   - Pattern list extensible — add more patterns directly in the file
   - NOTE: Google Drive + Google Photos links are useful — do NOT nuke those
-- [ ] `delete-patterns.js` — delete messages matching a custom regex list
-  - Good morning/night messages, news spam, emoji chains, motivational quotes
-  - Pattern list in a config file (regex per line)
+- [x] `delete-patterns.js` — delete messages matching a custom regex list
+  - Patterns in `patterns.txt` — one regex per line, `#` for comments
+  - Ships with good morning/night, motivational, religious, chain message patterns
 - [ ] `delete-old.js` — delete your own messages older than N days
   - Configurable: by chat, by age, by type (text / media / links)
 
