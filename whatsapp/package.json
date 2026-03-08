@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "WhatsApp automation — delete junk, download media",
   "scripts": {
-    "delete-shorts": "node delete-shorts.js",
-    "dry":           "DRY_RUN=true node delete-shorts.js"
+    "delete-shorts":          "node delete-shorts.js",
+    "delete-forwarded-media": "node delete-forwarded-media.js",
+    "dry-shorts":             "DRY_RUN=true node delete-shorts.js",
+    "dry-forwarded-media":    "DRY_RUN=true node delete-forwarded-media.js"
   },
   "dependencies": {
     "qrcode-terminal": "^0.12.0",

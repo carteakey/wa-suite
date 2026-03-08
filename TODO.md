@@ -43,11 +43,11 @@ WhatsApp (whatsapp-web.js)
   - Configurable: by chat, by age, by type (text / media / links)
 
 ### Forwarded Media
-- [ ] `delete-forwarded-media.js` — delete forwarded images and videos
+- [x] `delete-forwarded-media.js` — delete forwarded images and videos
   - Match: `msg.isForwarded === true` AND `msg.hasMedia === true`
   - Covers: meme images, reposted reels, random videos from uncle groups
-  - Configurable threshold: `msg.forwardingScore > N` to only kill the most viral
-  - DRY_RUN mode prints count + chat breakdown before deleting
+  - Configurable threshold: `FORWARD_SCORE` (default 5 = "forwarded many times")
+  - Dry run prints count + breakdown by media type before deleting
 
 ### Group Management
 - [ ] `auto-mute.js` — mute groups matching a name pattern
