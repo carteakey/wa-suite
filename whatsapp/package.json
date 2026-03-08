@@ -1,0 +1,13 @@
+{
+  "name": "whatsapp-cleaner",
+  "version": "1.0.0",
+  "description": "WhatsApp automation — delete junk, download media",
+  "scripts": {
+    "delete-shorts": "node delete-shorts.js",
+    "dry":           "DRY_RUN=true node delete-shorts.js"
+  },
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.26.1-alpha.3"
+  }
+}
