@@ -33,10 +33,9 @@ WhatsApp (whatsapp-web.js)
   - Configurable: all chats, specific chats, or groups only
 - [ ] `delete-junk-links.js` — delete spam link patterns
   - YouTube Shorts (`youtube.com/shorts/`) ← already in delete-shorts.js
-  - Google Drive shares (`drive.google.com/file`, `drive.google.com/open`)
-  - Google Photos shares (`photos.app.goo.gl`, `photos.google.com/share`)
   - WhatsApp forward aggregators (whatsapp.com/channel, broadcast lists)
   - Pattern list extensible via config file
+  - NOTE: Google Drive + Google Photos links are useful — do NOT nuke those
 - [ ] `delete-patterns.js` — delete messages matching a custom regex list
   - Good morning/night messages, news spam, emoji chains, motivational quotes
   - Pattern list in a config file (regex per line)
