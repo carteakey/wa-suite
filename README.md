@@ -10,6 +10,7 @@ Kill the noise. Memes, forwards, spam links, junk messages — gone.
 |---|---|
 | `whatsapp/delete-shorts.js` | Delete all YouTube Shorts messages |
 | `whatsapp/delete-forwarded-media.js` | Delete forwarded images & videos |
+| `whatsapp/delete-junk-links.js` | Delete YouTube Shorts + Facebook links (extensible) |
 | `unforwarder.py` | Classify images via Ollama: meme → purge, real photo → save |
 | `screenshot_organizer.py` | Describe screenshots with Ollama, organise with Claude Code |
 
@@ -83,6 +84,21 @@ python screenshot_organizer.py describe --source ~/Desktop/Screenshots
 # Step 2: move files per assignments.json
 python screenshot_organizer.py execute  --source ~/Desktop/Screenshots
 python screenshot_organizer.py execute  --source ~/Desktop/Screenshots --dry-run
+```
+
+---
+
+## whatsapp/delete-junk-links.js
+
+Delete spam link messages — YouTube Shorts and Facebook by default. Prints a
+per-pattern breakdown in dry run. Add more patterns directly in the `PATTERNS` array.
+
+```bash
+cd whatsapp
+
+node delete-junk-links.js                                # dry run
+DRY_RUN=false node delete-junk-links.js                 # nuke all patterns
+DRY_RUN=false MSG_LIMIT=5000 node delete-junk-links.js  # deeper history
 ```
 
 ---

@@ -31,10 +31,10 @@ WhatsApp (whatsapp-web.js)
 - [ ] `delete-forwards.js` — delete heavily forwarded messages
   - Filter by `msg.isForwarded` + `msg.forwardingScore` threshold (e.g. >5)
   - Configurable: all chats, specific chats, or groups only
-- [ ] `delete-junk-links.js` — delete spam link patterns
-  - YouTube Shorts (`youtube.com/shorts/`) ← already in delete-shorts.js
-  - WhatsApp forward aggregators (whatsapp.com/channel, broadcast lists)
-  - Pattern list extensible via config file
+- [x] `delete-junk-links.js` — delete spam link patterns
+  - YouTube Shorts (`youtube.com/shorts/`)
+  - Facebook (`facebook.com`, `fb.com`, `fb.watch`)
+  - Pattern list extensible — add more patterns directly in the file
   - NOTE: Google Drive + Google Photos links are useful — do NOT nuke those
 - [ ] `delete-patterns.js` — delete messages matching a custom regex list
   - Good morning/night messages, news spam, emoji chains, motivational quotes

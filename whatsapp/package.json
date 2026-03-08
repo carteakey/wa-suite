@@ -5,8 +5,10 @@
   "scripts": {
     "delete-shorts":          "node delete-shorts.js",
     "delete-forwarded-media": "node delete-forwarded-media.js",
+    "delete-junk-links":      "node delete-junk-links.js",
     "dry-shorts":             "DRY_RUN=true node delete-shorts.js",
-    "dry-forwarded-media":    "DRY_RUN=true node delete-forwarded-media.js"
+    "dry-forwarded-media":    "DRY_RUN=true node delete-forwarded-media.js",
+    "dry-junk-links":         "DRY_RUN=true node delete-junk-links.js"
   },
   "dependencies": {
     "qrcode-terminal": "^0.12.0",
