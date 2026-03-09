@@ -1,0 +1,9 @@
+{
+  "name": "wa-suite",
+  "version": "1.0.0",
+  "description": "WhatsApp hygiene monorepo — unforwarder + memento",
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.26.1-alpha.3"
+  }
+}

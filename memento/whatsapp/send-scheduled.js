@@ -14,10 +14,10 @@ const { createClient } = require('../../lib/client');
 const fs   = require('fs');
 const path = require('path');
 
-const DRY_RUN          = process.env.DRY_RUN !== 'false';
-const OLLAMA_URL       = process.env.OLLAMA_SERVER_URL || 'http://localhost:11434';
-const OLLAMA_MODEL     = process.env.OLLAMA_TEXT_MODEL || 'llama3.2';
-const SCHEDULE_FILE    = path.join(__dirname, 'schedule.json');
+const DRY_RUN       = process.env.DRY_RUN !== 'false';
+const OLLAMA_URL    = process.env.OLLAMA_SERVER_URL || 'http://localhost:11434';
+const OLLAMA_MODEL  = process.env.OLLAMA_TEXT_MODEL || 'qwen3.5:9b';
+const SCHEDULE_FILE = path.join(__dirname, 'schedule.json');
 
 // ─── Load schedule ────────────────────────────────────────────────────────────
 if (!fs.existsSync(SCHEDULE_FILE)) {
@@ -38,16 +38,20 @@ function isActiveToday(entry) {
 }
 
 // ─── Generate message via Ollama ──────────────────────────────────────────────
-async function generateMessage(theme) {
-  const prompt = `Write a short, creative, warm birthday message. Theme or context: "${theme}".
-Make it feel personal and genuine, not generic. Vary the style — sometimes funny, sometimes heartfelt, sometimes poetic.
+async function generateMessage(theme, contact) {
+  const prompt = `Write a short, creative, warm birthday message for ${contact}. Theme or context: "${theme}".
+Address them by name. Make it feel personal and genuine, not generic. Vary the style — sometimes funny, sometimes heartfelt, sometimes poetic.
 Keep it under 3 sentences. Just the message text, nothing else.`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 300_000); // 5 min
 
   const res = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: OLLAMA_MODEL, prompt, stream: false }),
-  });
+    body: JSON.stringify({ model: OLLAMA_MODEL, prompt, stream: false, think: false }),
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeout));
 
   if (!res.ok) throw new Error(`Ollama error: ${res.status}`);
   const data = await res.json();
@@ -82,9 +86,10 @@ client.on('ready', async () => {
     console.log(`Contact: ${entry.contact}`);
 
     // Find the chat
+    const digits = entry.contact.replace(/\D/g, '');
     const chat = chats.find(c =>
       (c.name || '').toLowerCase().includes(entry.contact.toLowerCase()) ||
-      (c.id?.user || '').includes(entry.contact.replace(/\D/g, ''))
+      (digits.length > 5 && (c.id?.user || '').includes(digits))
     );
 
     if (!chat) {
@@ -92,23 +97,51 @@ client.on('ready', async () => {
       continue;
     }
 
+    console.log(`  Chat: ${chat.name} | group: ${chat.isGroup} | id: ${chat.id._serialized}`);
+
     // Generate or use message
-    let message = entry.message;
+    let message = null;
     if (entry.use_ai) {
       try {
-        process.stdout.write(`  Generating message via Ollama (${OLLAMA_MODEL})...`);
-        message = await generateMessage(entry.message || 'birthday');
+        process.stdout.write(`  Generating message via Ollama (${OLLAMA_MODEL} @ ${OLLAMA_URL})...`);
+        message = await generateMessage(entry.message || 'birthday', entry.contact);
         console.log(' done.');
       } catch (e) {
-        console.log(`\n  ✗ Ollama failed: ${e.message} — falling back to static message.`);
+        console.log(`\n  ✗ Ollama failed: ${e.message}`);
+        if (entry.fallback_message) {
+          message = entry.fallback_message;
+          console.log(`  Using fallback: ${message}`);
+        } else {
+          console.log(`  No fallback_message set — skipping send to avoid sending garbage.`);
+          console.log(`  Tip: set OLLAMA_SERVER_URL or add "fallback_message" to schedule.json\n`);
+          continue;
+        }
       }
+    } else {
+      message = entry.message;
     }
 
     console.log(`  Message: ${message}`);
 
     if (!DRY_RUN) {
-      await chat.sendMessage(message);
-      console.log(`  ✓ Sent to ${chat.name}`);
+      try {
+        await sleep(2000); // give client a moment after ready
+        const result = await client.sendMessage(chat.id._serialized, message);
+        // Wait for server ack (ack: 0 = pending, 1 = sent to server, 2 = delivered)
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('ack timeout')), 15000);
+          client.on('message_ack', (msg, ack) => {
+            if (msg.id.id === result.id.id && ack >= 1) {
+              clearTimeout(timeout);
+              resolve(ack);
+            }
+          });
+        });
+        console.log(`  ✓ Delivered to ${chat.name}`);
+      } catch (e) {
+        console.log(`  ✗ Send failed: ${e.message}`);
+        console.log(e);
+      }
     } else {
       console.log(`  (dry run — not sent)`);
     }
@@ -118,5 +151,7 @@ client.on('ready', async () => {
 
   process.exit(0);
 });
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 client.initialize();
