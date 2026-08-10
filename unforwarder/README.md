@@ -10,8 +10,12 @@ Kill the noise. Memes, forwards, spam links, junk messages — gone.
 |---|---|
 | `whatsapp/delete-shorts.js` | Delete all YouTube Shorts messages |
 | `whatsapp/delete-forwarded-media.js` | Delete forwarded images & videos |
+| `whatsapp/delete-forwards.js` | Delete forwarded messages sent by me |
+| `whatsapp/delete-old.js` | Delete my messages older than a validated age |
 | `whatsapp/delete-junk-links.js` | Delete YouTube Shorts + Facebook links (extensible) |
 | `unforwarder.py` | Classify images via Ollama: meme → purge, real photo → save |
+| `whatsapp/auto-mute.js` | Preview or mute groups matching explicit patterns |
+| `whatsapp/leave-groups.js` | Review or leave explicitly matched inactive groups |
 | `screenshot_organizer.py` | Describe screenshots with Ollama, organise with Claude Code |
 
 ## Setup
@@ -55,6 +59,19 @@ DRY_RUN=false FORWARD_SCORE=1 node delete-forwarded-media.js  # any forwarded me
 DRY_RUN=false MSG_LIMIT=5000 node delete-forwarded-media.js   # deeper history
 ```
 
+`delete-forwards.js` covers forwarded text and media. It defaults to forwarding
+score `5`, filters with `CHATS`/`GROUPS_ONLY`, de-duplicates message IDs, and
+only considers messages where `fromMe` is true. `delete-old.js` requires
+`AGE_DAYS` (or `MAX_AGE_DAYS`) and optionally accepts `MESSAGE_TYPES=text,media,link`.
+Both commands are dry-run by default and never print message bodies or contact
+identifiers.
+
+```bash
+node delete-forwards.js
+DRY_RUN=false FORWARD_SCORE=5 node delete-forwards.js
+AGE_DAYS=365 node delete-old.js
+```
+
 ---
 
 ## unforwarder.py
@@ -68,6 +85,16 @@ SOURCE_FOLDER=~/Pictures/WhatsApp/incoming python unforwarder.py
 
 # custom model or remote Ollama
 OLLAMA_MODEL=llava:13b OLLAMA_SERVER_URL=http://myserver:11434 python unforwarder.py
+```
+
+The classifier accepts JPG/JPEG/PNG/WebP and short MP4/MOV/WebM/3GP videos
+(video classification requires `ffmpeg`). It is dry-run by default, routes
+uncertain answers to `review-n-delete/`, and supports a bounded list file:
+
+```bash
+python unforwarder.py --source ~/Pictures/WhatsApp/incoming --dry-run
+python unforwarder.py --source ~/Pictures/WhatsApp/incoming --list-file media.txt --confidence
+DRY_RUN=false python unforwarder.py --source ~/Pictures/WhatsApp/incoming --live
 ```
 
 ---
@@ -85,6 +112,21 @@ python screenshot_organizer.py describe --source ~/Desktop/Screenshots
 python screenshot_organizer.py execute  --source ~/Desktop/Screenshots
 python screenshot_organizer.py execute  --source ~/Desktop/Screenshots --dry-run
 ```
+
+## Group controls and scheduling
+
+Group operations require explicit patterns and confirmation for live changes:
+
+```bash
+GROUP_PATTERNS="Muted Family,Old Group" node auto-mute.js
+DRY_RUN=false GROUP_PATTERNS="Old Group" MUTE_CONFIRM=MUTE_MATCHING_GROUPS node auto-mute.js
+GROUP_PATTERNS="Old Group" INACTIVE_DAYS=90 node leave-groups.js
+```
+
+The repository-relative `../run.sh weekly` command is the weekly launchd target;
+`../run.sh cleanup` remains available for destruction-only runs.
+`infra/install-launchd.sh` renders a per-user LaunchAgent with `DRY_RUN=true`,
+a lock directory, and aggregate-only logs.
 
 ---
 
@@ -114,3 +156,10 @@ DRY_RUN=false MSG_LIMIT=5000 node delete-junk-links.js  # deeper history
 | `OLLAMA_SERVER_URL` | `http://localhost:11434` | unforwarder.py, screenshot_organizer.py |
 | `OLLAMA_MODEL` | `qwen2.5vl:7b` | unforwarder.py |
 | `OLLAMA_VISION_MODEL` | `qwen2.5vl:7b` | screenshot_organizer.py |
+| `AGE_DAYS` | *(required by delete-old)* | delete-old.js |
+| `MESSAGE_TYPES` | *(all)* | delete-old.js |
+| `GROUP_PATTERNS` | *(required by group tools)* | auto-mute.js, leave-groups.js |
+| `MUTE_CONFIRM` | *(required live)* | auto-mute.js |
+| `LEAVE_CONFIRM` | *(required live)* | leave-groups.js |
+| `VIDEO_FFMPEG` | `ffmpeg` | unforwarder.py video mode |
+| `VIDEO_FRAME_COUNT` | `4` | unforwarder.py video mode |

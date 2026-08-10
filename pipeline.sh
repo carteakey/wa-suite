@@ -62,7 +62,8 @@ run_preserve() {
   if [ "$DRY_RUN" = "false" ] && [ -d "$INCOMING_DIR" ]; then
     echo ""
     echo "▸ Classifying with Ollama ($OLLAMA_MODEL)..."
-    SOURCE_FOLDER="$INCOMING_DIR" \
+    DRY_RUN="$DRY_RUN" \
+      SOURCE_FOLDER="$INCOMING_DIR" \
       OLLAMA_SERVER_URL="$OLLAMA_SERVER_URL" \
       OLLAMA_MODEL="$OLLAMA_MODEL" \
       python "$UNFORWARDER/unforwarder.py"
