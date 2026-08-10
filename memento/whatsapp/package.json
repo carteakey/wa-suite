@@ -7,7 +7,11 @@
     "dry-download-media": "DRY_RUN=true node download-media.js",
     "export-chat":        "node export-chat.js",
     "starred-sync":       "node starred-sync.js",
-    "stats":              "node stats.js"
+    "send-scheduled": "node send-scheduled.js",
+    "dry-starred-sync": "DRY_RUN=true node starred-sync.js",
+    "stats":              "node stats.js",
+    "dry-stats": "DRY_RUN=true node stats.js",
+    "test": "node --test ../../test/*.test.js"
   },
   "dependencies": {
     "qrcode-terminal": "^0.12.0",

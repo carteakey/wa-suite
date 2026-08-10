@@ -23,6 +23,11 @@ DRY_RUN=false ./pipeline.sh destroy
 
 # preservation only
 DRY_RUN=false ./pipeline.sh preserve
+
+# command entrypoint (works from any directory; mutating commands stay dry-run)
+./run.sh --help
+./run.sh starred-sync
+./run.sh classify --source ~/Pictures/WhatsApp/incoming
 ```
 
 ### What it does
@@ -52,3 +57,11 @@ DRY_RUN=false ./pipeline.sh preserve
 | `OLLAMA_SERVER_URL` | `http://localhost:11434` | Ollama instance |
 
 See `unforwarder/` and `memento/` READMEs for per-script options.
+
+## Privacy and safety
+
+The repository never stores WhatsApp sessions, chat exports, contacts, profile
+records, images, Office temporary files, or matching-person data. These paths
+are ignored locally; only sanitized fixtures may be committed. Destructive
+commands and media classification default to dry-run, and cleanup scripts only
+mutate messages sent by the authenticated account after explicit opt-in.
