@@ -21,6 +21,9 @@ DRY_RUN=false ./pipeline.sh
 # destruction only
 DRY_RUN=false ./pipeline.sh destroy
 
+# just sort what's already in INCOMING_DIR
+./pipeline.sh classify
+
 # preservation only
 DRY_RUN=false ./pipeline.sh preserve
 ```
@@ -34,7 +37,9 @@ DRY_RUN=false ./pipeline.sh preserve
 
 **Preserve (memento)**
 1. Download personal media → `~/Pictures/WhatsApp/incoming/`
-2. Classify with Ollama vision — memes to `review-n-delete/`, real photos to `save/`
+2. Sort with [sortling](https://github.com/carteakey/sortling) (`--profile photos`): real photos to
+   `photos/<people|places|food|pets|events|other>`, memes and forwards to `memes/` to review,
+   blurry or black shots to `_delete/`. Nothing is deleted outright, and every run has an undo.
 3. Move real photos to `~/Pictures/WhatsApp/`
 
 ---
@@ -48,7 +53,8 @@ DRY_RUN=false ./pipeline.sh preserve
 | `INCOMING_DIR` | `~/Pictures/WhatsApp/incoming` | Download landing zone |
 | `FINAL_DIR` | `~/Pictures/WhatsApp` | Real photos destination |
 | `SKIP_FORWARDED` | `false` | Download forwarded media too (for classification) |
-| `OLLAMA_MODEL` | `qwen3-vl:8b` | Vision model for classification |
-| `OLLAMA_SERVER_URL` | `http://localhost:11434` | Ollama instance |
+| `SORTLING_PY` | `./sortling.py` | sortling script; fetched from the release if missing |
+| `SORTLING_VERSION` | `v0.3.0` | Release to fetch |
+| `SORTLING_BACKEND` | (sortling's default) | Model backend from sortling's config (`sortling.py --setup`) |
 
 See `unforwarder/` and `memento/` READMEs for per-script options.

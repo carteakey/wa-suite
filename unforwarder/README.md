@@ -11,7 +11,7 @@ Kill the noise. Memes, forwards, spam links, junk messages — gone.
 | `whatsapp/delete-shorts.js` | Delete all YouTube Shorts messages |
 | `whatsapp/delete-forwarded-media.js` | Delete forwarded images & videos |
 | `whatsapp/delete-junk-links.js` | Delete YouTube Shorts + Facebook links (extensible) |
-| `unforwarder.py` | Classify images via Ollama: meme → purge, real photo → save |
+| `unforwarder.py` | Legacy: classify images via Ollama. `pipeline.sh` now uses [sortling](https://github.com/carteakey/sortling) instead |
 | `screenshot_organizer.py` | Describe screenshots with Ollama, organise with Claude Code |
 
 ## Setup
