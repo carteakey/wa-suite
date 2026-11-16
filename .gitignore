@@ -65,3 +65,6 @@ memento/whatsapp/export-from-number.js
 **/~$*
 !test/fixtures/**
 !**/test/fixtures/**
+
+# fetched by pipeline.sh
+sortling.py

@@ -13,7 +13,7 @@ Kill the noise. Memes, forwards, spam links, junk messages — gone.
 | `whatsapp/delete-forwards.js` | Delete forwarded messages sent by me |
 | `whatsapp/delete-old.js` | Delete my messages older than a validated age |
 | `whatsapp/delete-junk-links.js` | Delete YouTube Shorts + Facebook links (extensible) |
-| `unforwarder.py` | Classify images via Ollama: meme → purge, real photo → save |
+| `unforwarder.py` | Legacy: classify images via Ollama. `pipeline.sh` now uses [sortling](https://github.com/carteakey/sortling) instead |
 | `whatsapp/auto-mute.js` | Preview or mute groups matching explicit patterns |
 | `whatsapp/leave-groups.js` | Review or leave explicitly matched inactive groups |
 | `screenshot_organizer.py` | Describe screenshots with Ollama, organise with Claude Code |
