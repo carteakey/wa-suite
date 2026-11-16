@@ -13,11 +13,19 @@
 const { createClient } = require('../../lib/client');
 const fs   = require('fs');
 const path = require('path');
+const {
+  entryKey,
+  isActiveOnDate,
+  loadCheckpoint,
+  saveCheckpoint,
+} = require('./schedule-utils');
 
 const DRY_RUN       = process.env.DRY_RUN !== 'false';
 const OLLAMA_URL    = process.env.OLLAMA_SERVER_URL || 'http://localhost:11434';
 const OLLAMA_MODEL  = process.env.OLLAMA_TEXT_MODEL || 'qwen3.5:9b';
 const SCHEDULE_FILE = path.join(__dirname, 'schedule.json');
+const SEND_ONCE_PER_DAY = process.env.SEND_ONCE_PER_DAY !== 'false';
+const CHECKPOINT_FILE = process.env.SCHEDULE_CHECKPOINT || path.join(__dirname, 'schedule-progress.json');
 
 // ─── Load schedule ────────────────────────────────────────────────────────────
 if (!fs.existsSync(SCHEDULE_FILE)) {
@@ -28,13 +36,7 @@ const schedule = JSON.parse(fs.readFileSync(SCHEDULE_FILE, 'utf8'));
 
 // ─── Check if an entry is active today ────────────────────────────────────────
 function isActiveToday(entry) {
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const day   = now.getDate();
-
-  const afterStart = month > entry.start_month || (month === entry.start_month && day >= entry.start_day);
-  const beforeEnd  = month < entry.end_month   || (month === entry.end_month   && day <= entry.end_day);
-  return afterStart && beforeEnd;
+  return isActiveOnDate(entry, new Date());
 }
 
 // ─── Generate message via Ollama ──────────────────────────────────────────────
@@ -71,7 +73,11 @@ client.on('ready', async () => {
   const today = new Date();
   console.log(`Date: ${today.toDateString()}\n`);
 
-  const active = schedule.filter(isActiveToday);
+  const checkpoint = loadCheckpoint(CHECKPOINT_FILE);
+  const active = schedule
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => isActiveToday(entry))
+    .filter(({ entry, index }) => !SEND_ONCE_PER_DAY || !checkpoint.has(entryKey(entry, index, today)));
 
   if (active.length === 0) {
     console.log('No scheduled messages active today.');
@@ -82,8 +88,8 @@ client.on('ready', async () => {
 
   const chats = await client.getChats();
 
-  for (const entry of active) {
-    console.log(`Contact: ${entry.contact}`);
+  for (const { entry, index } of active) {
+    console.log(`Schedule entry ${index + 1}`);
 
     // Find the chat
     const digits = entry.contact.replace(/\D/g, '');
@@ -93,11 +99,11 @@ client.on('ready', async () => {
     );
 
     if (!chat) {
-      console.log(`  ✗ Chat not found for "${entry.contact}"\n`);
+      console.log('  ✗ Chat not found; skipping.\n');
       continue;
     }
 
-    console.log(`  Chat: ${chat.name} | group: ${chat.isGroup} | id: ${chat.id._serialized}`);
+    console.log(`  Chat matched (group: ${Boolean(chat.isGroup)})`);
 
     // Generate or use message
     let message = null;
@@ -110,7 +116,7 @@ client.on('ready', async () => {
         console.log(`\n  ✗ Ollama failed: ${e.message}`);
         if (entry.fallback_message) {
           message = entry.fallback_message;
-          console.log(`  Using fallback: ${message}`);
+          console.log('  Using configured fallback message.');
         } else {
           console.log(`  No fallback_message set — skipping send to avoid sending garbage.`);
           console.log(`  Tip: set OLLAMA_SERVER_URL or add "fallback_message" to schedule.json\n`);
@@ -121,7 +127,7 @@ client.on('ready', async () => {
       message = entry.message;
     }
 
-    console.log(`  Message: ${message}`);
+    console.log('  Message prepared.');
 
     if (!DRY_RUN) {
       try {
@@ -129,18 +135,28 @@ client.on('ready', async () => {
         const result = await client.sendMessage(chat.id._serialized, message);
         // Wait for server ack (ack: 0 = pending, 1 = sent to server, 2 = delivered)
         await new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('ack timeout')), 15000);
-          client.on('message_ack', (msg, ack) => {
+          let onAck;
+          const timeout = setTimeout(() => {
+            if (onAck) client.off('message_ack', onAck);
+            reject(new Error('ack timeout'));
+          }, 15000);
+          onAck = (msg, ack) => {
             if (msg.id.id === result.id.id && ack >= 1) {
               clearTimeout(timeout);
+              client.off('message_ack', onAck);
               resolve(ack);
             }
-          });
+          };
+          client.on('message_ack', onAck);
+          timeout.unref?.();
         });
-        console.log(`  ✓ Delivered to ${chat.name}`);
+        if (SEND_ONCE_PER_DAY) {
+          checkpoint.add(entryKey(entry, index, today));
+          saveCheckpoint(CHECKPOINT_FILE, checkpoint);
+        }
+        console.log('  ✓ Delivered.');
       } catch (e) {
         console.log(`  ✗ Send failed: ${e.message}`);
-        console.log(e);
       }
     } else {
       console.log(`  (dry run — not sent)`);

@@ -9,6 +9,7 @@
 //   PATTERNS_FILE=./my-patterns.txt DRY_RUN=false node delete-patterns.js
 
 const { createClient } = require('../../lib/client');
+const { dedupeCandidates, isOwnMessage, messageId } = require('./cleanup-utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -56,7 +57,7 @@ client.on('ready', async () => {
   const hits = [];
 
   for (const chat of chats) {
-    process.stdout.write(`  ${chat.name || chat.id.user} ... `);
+    process.stdout.write('  scanning chat ... ');
 
     let messages;
     try {
@@ -67,42 +68,40 @@ client.on('ready', async () => {
     }
 
     const matching = messages.filter(m => {
-      if (!m.body) return false;
+      if (!isOwnMessage(m) || !m.body) return false;
       return patterns.some(p => p.test(m.body));
     });
 
     console.log(`${matching.length} hit(s)`);
     hits.push(...matching.map(msg => ({
-      chatName: chat.name || chat.id.user,
+      key: messageId(msg, chat),
       matched: patterns.find(p => p.test(msg.body)),
-      msg,
+      message: msg,
     })));
   }
 
-  console.log(`\nTotal: ${hits.length} messages matching patterns\n`);
+  const uniqueHits = dedupeCandidates(hits);
 
-  for (const h of hits) {
-    console.log(`  [${h.chatName}] [${h.matched}] ${h.msg.body.replace(/\n/g, ' ').substring(0, 80)}`);
-  }
+  console.log(`\nTotal: ${uniqueHits.length} own messages matching patterns\n`);
 
-  if (DRY_RUN || hits.length === 0) {
-    console.log(hits.length ? '\nDry run done. Set DRY_RUN=false to nuke.' : '\nNothing to delete.');
+  if (DRY_RUN || uniqueHits.length === 0) {
+    console.log(uniqueHits.length ? '\nDry run done. Set DRY_RUN=false to nuke.' : '\nNothing to delete.');
     process.exit(0);
   }
 
   console.log('\nDeleting...');
   let n = 0;
-  for (const h of hits) {
+  for (const h of uniqueHits) {
     try {
-      await h.msg.delete(false);
-      process.stdout.write(`\r  ${++n}/${hits.length}`);
+      await h.message.delete(false);
+      process.stdout.write(`\r  ${++n}/${uniqueHits.length}`);
       await sleep(600);
     } catch (e) {
       console.log(`\n  Failed: ${e.message}`);
     }
   }
 
-  console.log(`\n\nDone. ${n}/${hits.length} deleted.`);
+  console.log(`\n\nDone. ${n}/${uniqueHits.length} deleted.`);
   process.exit(0);
 });
 

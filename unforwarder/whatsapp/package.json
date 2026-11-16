@@ -5,10 +5,19 @@
   "scripts": {
     "delete-shorts":          "node delete-shorts.js",
     "delete-forwarded-media": "node delete-forwarded-media.js",
+    "delete-forwards":        "node delete-forwards.js",
+    "delete-old":             "node delete-old.js",
     "delete-junk-links":      "node delete-junk-links.js",
+    "delete-patterns":        "node delete-patterns.js",
+    "auto-mute":              "node auto-mute.js",
+    "leave-groups":           "node leave-groups.js",
+    "classify":               "python3 ../unforwarder.py",
     "dry-shorts":             "DRY_RUN=true node delete-shorts.js",
     "dry-forwarded-media":    "DRY_RUN=true node delete-forwarded-media.js",
-    "dry-junk-links":         "DRY_RUN=true node delete-junk-links.js"
+    "dry-forwarded":          "DRY_RUN=true node delete-forwards.js",
+    "dry-old":                "DRY_RUN=true node delete-old.js",
+    "dry-junk-links":         "DRY_RUN=true node delete-junk-links.js",
+    "test":                   "node --test ../../test/*.test.js"
   },
   "dependencies": {
     "qrcode-terminal": "^0.12.0",

@@ -50,20 +50,16 @@ client.on('ready', async () => {
   );
 
   if (matches.length === 0) {
-    console.error(`No chat found matching "${CHAT_NAME}".`);
-    console.log('Available chats:');
-    chats.slice(0, 20).forEach(c => console.log(`  ${c.name || c.id.user}`));
+    console.error('No matching chat found.');
     process.exit(1);
   }
 
   if (matches.length > 1) {
-    console.log(`Multiple matches for "${CHAT_NAME}" — using first:`);
-    matches.forEach(c => console.log(`  ${c.name}`));
-    console.log();
+    console.log(`Multiple matches (${matches.length}); using the first.`);
   }
 
   const chat = matches[0];
-  console.log(`Exporting: ${chat.name} (${MSG_LIMIT} messages)\n`);
+  console.log(`Exporting one chat (limit ${MSG_LIMIT} messages).\n`);
 
   const messages = await chat.fetchMessages({ limit: MSG_LIMIT });
   console.log(`Fetched ${messages.length} messages.`);
@@ -96,10 +92,7 @@ client.on('ready', async () => {
   const markdown = lines.join('\n');
 
   if (DRY_RUN) {
-    console.log('\n--- Preview (first 20 lines) ---');
-    console.log(markdown.split('\n').slice(0, 20).join('\n'));
-    console.log('---');
-    console.log(`\nDry run done. Set DRY_RUN=false to write the file.`);
+    console.log(`\nDry run done: ${messages.length} messages across ${days.size} days. Set DRY_RUN=false to write the file.`);
     process.exit(0);
   }
 
@@ -107,7 +100,7 @@ client.on('ready', async () => {
   const filename = path.join(OUTPUT_DIR, `${slugify(chat.name)}.md`);
   fs.writeFileSync(filename, markdown, 'utf8');
 
-  console.log(`\nExported to: ${filename}`);
+  console.log('\nExport complete.');
   console.log(`${messages.length} messages, ${days.size} days.`);
   process.exit(0);
 });

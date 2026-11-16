@@ -2,23 +2,24 @@
 
 > **Scope: preservation.** Save what matters — personal photos, important chats, memories.
 > Cleanup and deletion lives in [unforwarder](../unforwarder).
+> Committed backlog planning lives in the WA Suite section of `/Users/kchauhan/repos/TODO_REPORT.md` and Linear; unchecked entries here are speculative only.
 
 ## Pipeline Vision
 
 ```
 WhatsApp chats
     │
-    ├─ [ ] download-media.js   — pull images/videos to ~/Pictures/WhatsApp/YYYY-MM/
+    ├─ [x] download-media.js   — pull images/videos to ~/Pictures/WhatsApp/YYYY-MM/
     │         └─ feed into unforwarder.py to separate real photos from junk
     │
-    ├─ [ ] export-chat.js      — dump chat history to markdown/JSON
+    ├─ [x] export-chat.js      — dump chat history to markdown/JSON
     │
-    ├─ [ ] starred-sync.js     — local copy of all starred messages
+    ├─ [x] starred-sync.js     — local copy of all starred messages (CAR-179)
     │
-    └─ [ ] stats.js            — analytics to understand your chats
+    └─ [x] stats.js            — analytics to understand your chats (CAR-179)
 
 ~/Pictures/WhatsApp/
-    └─ [ ] launchd job         — weekly: download new media, classify, archive
+    └─ [x] launchd job         — weekly: download new media, classify, archive (CAR-182)
 ```
 
 ---
@@ -41,13 +42,13 @@ WhatsApp chats
   - Useful before leaving a group or archiving an important convo
 
 ### Starred Messages
-- [ ] `starred-sync.js` — dump all starred messages to a local file
+- [x] `starred-sync.js` — dump all starred messages to a local file (CAR-179)
   - Output: `~/Documents/WhatsApp/starred.md`
   - Format: grouped by chat, with sender + timestamp
   - Run periodically — append new, don't duplicate
 
 ### Analytics
-- [ ] `stats.js` — understand your WhatsApp usage
+- [x] `stats.js` — understand your WhatsApp usage (CAR-179)
   - Most active senders, most active groups
   - Media volume per chat (who sends the most photos?)
   - Message count over time
@@ -57,9 +58,9 @@ WhatsApp chats
 
 ## Infrastructure
 
-- [ ] `whatsapp/package.json` with all scripts registered
-- [ ] `.env.example` — document all env vars
-- [ ] `run.sh` entrypoint:
+- [x] `whatsapp/package.json` with all scripts registered (CAR-180)
+- [x] `.env.example` — document all env vars (CAR-180)
+- [x] `run.sh` entrypoint (CAR-180):
   ```
   ./run.sh download-media --chat "Family" --since 2024-01-01
   ./run.sh export-chat --chat "Best Friends"
@@ -67,5 +68,5 @@ WhatsApp chats
   ./run.sh stats
   ./run.sh pipeline     # download → classify (via unforwarder) → archive
   ```
-- [ ] launchd plist: weekly media backup job
+- [x] launchd plist: weekly media backup job (CAR-182)
   - `infra/com.memento.weekly.plist`

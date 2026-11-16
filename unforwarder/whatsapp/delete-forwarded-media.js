@@ -8,6 +8,7 @@
 //   FORWARD_SCORE=1 DRY_RUN=false node delete-forwarded-media.js  (any forward)
 
 const { createClient } = require('../../lib/client');
+const { dedupeCandidates, isOwnMessage, messageId } = require('./cleanup-utils');
 
 const DRY_RUN       = process.env.DRY_RUN !== 'false';
 const MSG_LIMIT     = parseInt(process.env.MSG_LIMIT || '2000', 10);
@@ -30,7 +31,7 @@ client.on('ready', async () => {
   const hits = [];
 
   for (const chat of chats) {
-    process.stdout.write(`  ${chat.name || chat.id.user} ... `);
+    process.stdout.write('  scanning chat ... ');
 
     let messages;
     try {
@@ -42,23 +43,26 @@ client.on('ready', async () => {
 
     const matching = messages.filter(m =>
       m.hasMedia &&
+      isOwnMessage(m) &&
       m.isForwarded &&
       (m.forwardingScore ?? 1) >= FORWARD_SCORE
     );
 
     console.log(`${matching.length} hit(s)`);
     hits.push(...matching.map(msg => ({
-      chatName: chat.name || chat.id.user,
+      key: messageId(msg, chat),
       score: msg.forwardingScore ?? 1,
       type: msg.type,
-      msg,
+      message: msg,
     })));
   }
 
-  console.log(`\nTotal: ${hits.length} forwarded media messages (score >= ${FORWARD_SCORE})\n`);
+  const uniqueHits = dedupeCandidates(hits);
+
+  console.log(`\nTotal: ${uniqueHits.length} own forwarded media messages (score >= ${FORWARD_SCORE})\n`);
 
   // Summary by type
-  const byType = hits.reduce((acc, h) => {
+  const byType = uniqueHits.reduce((acc, h) => {
     acc[h.type] = (acc[h.type] || 0) + 1;
     return acc;
   }, {});
@@ -67,28 +71,24 @@ client.on('ready', async () => {
   }
   console.log();
 
-  for (const h of hits) {
-    console.log(`  [${h.chatName}] score=${h.score} type=${h.type}`);
-  }
-
-  if (DRY_RUN || hits.length === 0) {
-    console.log(hits.length ? '\nDry run done. Set DRY_RUN=false to nuke.' : '\nNothing to delete.');
+  if (DRY_RUN || uniqueHits.length === 0) {
+    console.log(uniqueHits.length ? '\nDry run done. Set DRY_RUN=false to nuke.' : '\nNothing to delete.');
     process.exit(0);
   }
 
   console.log('\nDeleting...');
   let n = 0;
-  for (const h of hits) {
+  for (const h of uniqueHits) {
     try {
-      await h.msg.delete(false); // for me only
-      process.stdout.write(`\r  ${++n}/${hits.length}`);
+      await h.message.delete(false); // for me only
+      process.stdout.write(`\r  ${++n}/${uniqueHits.length}`);
       await sleep(600);
     } catch (e) {
       console.log(`\n  Failed: ${e.message}`);
     }
   }
 
-  console.log(`\n\nDone. ${n}/${hits.length} deleted.`);
+  console.log(`\n\nDone. ${n}/${uniqueHits.length} deleted.`);
   process.exit(0);
 });
 

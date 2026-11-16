@@ -79,7 +79,7 @@ client.on('ready', async () => {
 
   console.log(`Skip forwarded: ${SKIP_FORWARDED}`);
   console.log(`Output: ${OUTPUT_DIR}`);
-  if (CHAT_FILTER) console.log(`Chat filter: ${CHAT_FILTER.join(', ')}`);
+  if (CHAT_FILTER) console.log('Chat filter configured.');
   console.log();
 
   if (!DRY_RUN) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -95,7 +95,7 @@ client.on('ready', async () => {
   let total = 0, skipped = 0, saved = 0;
 
   for (const chat of filtered) {
-    process.stdout.write(`  ${chat.name || chat.id.user} ... `);
+    process.stdout.write('  scanning chat ... ');
 
     let messages;
     try {

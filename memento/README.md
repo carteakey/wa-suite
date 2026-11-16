@@ -10,8 +10,9 @@ Remember what matters. Save personal photos, archive important chats, keep the s
 |---|---|
 | `whatsapp/download-media.js` | Download personal photos/videos from WhatsApp to disk |
 | `whatsapp/export-chat.js` | Export any chat to markdown or JSON *(coming soon)* |
-| `whatsapp/starred-sync.js` | Sync starred messages to a local markdown file *(coming soon)* |
-| `whatsapp/stats.js` | Message analytics *(coming soon)* |
+| `whatsapp/starred-sync.js` | Sync starred messages to a local markdown file |
+| `whatsapp/stats.js` | Privacy-safe aggregate message analytics |
+| `whatsapp/send-scheduled.js` | Dry-run-first scheduled messages with daily idempotency |
 
 ## Setup
 
@@ -63,6 +64,26 @@ DRY_RUN=false SKIP_FORWARDED=false OUTPUT_DIR=~/Pictures/WhatsApp/incoming node 
 SOURCE_FOLDER=~/Pictures/WhatsApp/incoming python ../../unforwarder/unforwarder.py
 ```
 
+### Starred sync and statistics
+
+Both commands default to dry-run. Starred sync writes
+`~/Documents/WhatsApp/starred.md` only with `DRY_RUN=false`; entries carry a
+stable message marker so reruns do not duplicate them. Statistics emit JSON by
+default, aggregate sender/chat identifiers as short hashes, and never print
+message bodies or phone numbers.
+
+```bash
+node starred-sync.js
+DRY_RUN=false OUTPUT_FILE=~/Documents/WhatsApp/starred.md node starred-sync.js
+node stats.js
+STATS_FORMAT=text node stats.js
+```
+
+The weekly LaunchAgent template lives at
+`../infra/com.carteakey.wa-suite.weekly.plist.in`; it invokes `../run.sh weekly`
+(preserve + cleanup) with a safe dry-run default. Install it with
+`../run.sh install-launchd`.
+
 ---
 
 ## Environment variables
@@ -74,3 +95,7 @@ SOURCE_FOLDER=~/Pictures/WhatsApp/incoming python ../../unforwarder/unforwarder.
 | `SKIP_FORWARDED` | `true` | download-media.js |
 | `CHATS` | *(all)* | download-media.js |
 | `OUTPUT_DIR` | `~/Pictures/WhatsApp` | download-media.js |
+| `OUTPUT_FILE` | `~/Documents/WhatsApp/starred.md` | starred-sync.js |
+| `STATS_FORMAT` | `json` | stats.js (`json` or `text`) |
+| `SEND_ONCE_PER_DAY` | `true` | send-scheduled.js |
+| `SCHEDULE_CHECKPOINT` | `./schedule-progress.json` | send-scheduled.js |
